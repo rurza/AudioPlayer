@@ -1,0 +1,22 @@
+{
+  "name": "StreamPlayer",
+  "version": "0.1.0",
+  "summary": "A short description of StreamPlayer.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/rurza/StreamPlayer",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "rurza": "adam@micropixels.pl"
+  },
+  "source": {
+    "git": "https://github.com/rurza/StreamPlayer.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "8.0"
+  },
+  "source_files": "StreamPlayer/Classes/**/*"
+}
