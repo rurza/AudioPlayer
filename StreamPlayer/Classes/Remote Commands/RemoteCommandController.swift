@@ -206,13 +206,7 @@ public class RemoteCommandController {
     }
     
     private func getRemoteCommandHandlerStatus(forError error: Error) -> MPRemoteCommandHandlerStatus {
-        if let error = error as? APError.LoadError {
-            switch error {
-            case .invalidSourceUrl(_):
-                return MPRemoteCommandHandlerStatus.commandFailed
-            }
-        }
-        else if let error = error as? APError.QueueError {
+        if let error = error as? StreamPlayerError.QueueError {
             switch error {
             case .noNextItem, .noPreviousItem, .invalidIndex(_, _):
                 return MPRemoteCommandHandlerStatus.noSuchContent

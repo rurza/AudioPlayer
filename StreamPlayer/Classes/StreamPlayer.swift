@@ -13,6 +13,8 @@ public class StreamPlayer {
     
     private lazy var avPlayer = AVQueuePlayer()
     
+    private(set) public var state: StreamPlayerState = .idle
+    
     public func play() {
         
     }
