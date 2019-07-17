@@ -9,34 +9,22 @@
 Pod::Spec.new do |s|
   s.name             = 'StreamPlayer'
   s.version          = '0.1.0'
-  s.summary          = 'A short description of StreamPlayer.'
-
-# This description is used to generate tags and improve search results.
-#   * Think: What does it do? Why did you write it? What is the focus?
-#   * Try to keep it short, snappy and to the point.
-#   * Write the description between the DESC delimiters below.
-#   * Finally, don't worry about the indent, CocoaPods strips it!
+  s.summary          = 'Simple to use wrapper around AVPlayer to stream music'
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+Simple to use wrapper around AVPlayer to stream music. Supports queueing, activating session, MPRemoteCommandCenter, NowPlayingInfo
                        DESC
 
   s.homepage         = 'https://github.com/rurza/StreamPlayer'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
-  s.author           = { 'rurza' => 'adam@micropixels.pl' }
+  s.author           = { 'Adam Różyński' => 'adam@micropixels.pl' }
   s.source           = { :git => 'https://github.com/rurza/StreamPlayer.git', :tag => s.version.to_s }
-  # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
+  s.social_media_url = 'https://twitter.com/rurza'
 
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '10.0'
 
   s.source_files = 'StreamPlayer/Classes/**/*'
+  s.frameworks = 'AVFoundation', 'MediaPlayer'
   
-  # s.resource_bundles = {
-  #   'StreamPlayer' => ['StreamPlayer/Assets/*.png']
-  # }
-
-  # s.public_header_files = 'Pod/Classes/**/*.h'
-  # s.frameworks = 'UIKit', 'MapKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
 end
