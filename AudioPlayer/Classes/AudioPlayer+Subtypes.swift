@@ -59,6 +59,13 @@ public extension AudioPlayer {
             }
         }
     }
+    
+    enum QueueError: Error {
+        case noPreviousItem
+        case noNextItem
+        case invalidIndex(index: Int, message: String)
+    }
+    
 
 }
 

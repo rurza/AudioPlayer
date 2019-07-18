@@ -15,11 +15,6 @@ public class AudioPlayer {
     public let remoteCommandController: RemoteCommandController
     public let event = EventHolder()
     
-    public var currentItem: AudioItem? {
-        return _currentItem
-    }
-    fileprivate var _currentItem: CachingPlayerItem?
-    
     /**
      Set this to false to disable automatic updating of now playing info for control center and lock screen.
      */
@@ -27,10 +22,8 @@ public class AudioPlayer {
     
     private(set) public var state: State = .idle
     
-
-    
     //MARK: Private
-    private lazy var avPlayer = AVQueuePlayer()
+    internal lazy var avPlayer = AVQueuePlayer()
     let playerObserver = AVPlayerObserver()
     var timeEventFrequency: TimeEventFrequency = .everySecond {
         didSet {
@@ -39,7 +32,7 @@ public class AudioPlayer {
     }
     let playerTimeObserver: AVPlayerTimeObserver
     let playerItemNotificationObserver = AVPlayerItemNotificationObserver()
-    let playerItemObserver = AVPlayerItemObserver()
+    let playerItemObserver = AudioPlayerItemObserver()
     
     public init(nowPlayingInfoController: NowPlayingInfoControllerProtocol = NowPlayingInfoController(),
                 remoteCommandController: RemoteCommandController = RemoteCommandController()) {
@@ -57,6 +50,7 @@ public class AudioPlayer {
     
     public func play() {
         avPlayer.play()
+        updateNowPlayingPlaybackValues()
     }
     
     public func pause() {
@@ -97,6 +91,16 @@ public class AudioPlayer {
         }
     }
     
+    public func addItems(items: [AudioItem]) {
+        let audioItems = items.map { AudioPlayerItem(audioItem: $0) }
+        for item in audioItems {
+            if avPlayer.canInsert(item, after: nil) {
+                avPlayer.insert(item, after: nil)
+                item.delegate = self
+            }
+        }
+    }
+    
 }
 
 extension AudioPlayer {
@@ -107,13 +111,13 @@ extension AudioPlayer {
     }
     
     var duration: TimeInterval {
-        if let seconds = _currentItem?.asset.duration.seconds, !seconds.isNaN {
+        if let seconds = avPlayer.currentItem?.asset.duration.seconds, !seconds.isNaN {
             return seconds
         }
-        else if let seconds = _currentItem?.duration.seconds, !seconds.isNaN {
+        else if let seconds = avPlayer.currentItem?.duration.seconds, !seconds.isNaN {
             return seconds
         }
-        else if let seconds = _currentItem?.loadedTimeRanges.first?.timeRangeValue.duration.seconds,
+        else if let seconds = avPlayer.currentItem?.loadedTimeRanges.first?.timeRangeValue.duration.seconds,
             !seconds.isNaN {
             return seconds
         }
@@ -139,4 +143,9 @@ extension AudioPlayer {
         get { return avPlayer.rate }
         set { avPlayer.rate = newValue }
     }
+    
+    var currentItem: AudioItem? {
+        return avPlayer.currentItem as? AudioItem
+    }
+    
 }

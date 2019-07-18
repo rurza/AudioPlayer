@@ -34,6 +34,7 @@ fileprivate extension URL {
 
 open class CachingPlayerItem: AVPlayerItem {
     
+    
     class ResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelegate, URLSessionDelegate, URLSessionDataDelegate, URLSessionTaskDelegate {
         
         var playingFromData = false
@@ -168,6 +169,7 @@ open class CachingPlayerItem: AVPlayerItem {
         
     }
     
+    
     fileprivate let resourceLoaderDelegate = ResourceLoaderDelegate()
     fileprivate let url: URL
     fileprivate let initialScheme: String?
@@ -261,6 +263,8 @@ open class CachingPlayerItem: AVPlayerItem {
     override init(asset: AVAsset, automaticallyLoadedAssetKeys: [String]?) {
         fatalError("not implemented")
     }
+    
+   
     
     deinit {
         NotificationCenter.default.removeObserver(self)

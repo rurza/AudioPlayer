@@ -6,7 +6,7 @@
 //
 
 public protocol AudioItem {
-    func getSourceUrl() -> String
+    func getSourceUrl() -> URL
     func getArtist() -> String?
     func getTitle() -> String?
     func getAlbumTitle() -> String?

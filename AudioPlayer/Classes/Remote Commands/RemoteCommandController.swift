@@ -206,7 +206,7 @@ public class RemoteCommandController {
     }
     
     private func getRemoteCommandHandlerStatus(forError error: Error) -> MPRemoteCommandHandlerStatus {
-        if let error = error as? StreamPlayerError.QueueError {
+        if let error = error as? AudioPlayer.QueueError {
             switch error {
             case .noNextItem, .noPreviousItem, .invalidIndex(_, _):
                 return MPRemoteCommandHandlerStatus.noSuchContent
