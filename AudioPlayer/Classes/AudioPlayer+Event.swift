@@ -8,48 +8,48 @@
 
 import Foundation
 
-extension StreamPlayer {
+extension AudioPlayer {
     
-    public typealias SeekEventData = (seconds: Int, didFinish: Bool)
+    public typealias SeekEventData = (seconds: TimeInterval, didFinish: Bool)
     
     public struct EventHolder {
         
         /**
-         Emitted when the `StreamPlayer`s state is changed
+         Emitted when the `AudioPlayer`s state is changed
          - Important: Remember to dispatch to the main queue if any UI is updated in the event handler.
          */
-        public let stateChange: StreamPlayer.Event<StreamPlayerState> = StreamPlayer.Event()
+        public let stateChange: AudioPlayer.Event<AudioPlayer.State> = AudioPlayer.Event()
         
         /**
          Emitted when the playback of the player, for some reason, has stopped.
          - Important: Remember to dispatch to the main queue if any UI is updated in the event handler.
          */
-        public let playbackEnd: StreamPlayer.Event<PlaybackEndedReason> = StreamPlayer.Event()
+        public let playbackEnd: AudioPlayer.Event<PlaybackEndedReason> = AudioPlayer.Event()
         
         /**
          Emitted when a second is elapsed in the `StreamPlayer`.
          - Important: Remember to dispatch to the main queue if any UI is updated in the event handler.
          */
-        public let secondElapse: StreamPlayer.Event<TimeInterval> = StreamPlayer.Event()
+        public let secondElapse: AudioPlayer.Event<TimeInterval> = AudioPlayer.Event()
         
         /**
          Emitted when the player encounters an error. This will ultimately result in the AVPlayer instance to be recreated.
          If this event is emitted, it means you will need to load a new item in some way. Calling play() will not resume playback.
          - Important: Remember to dispatch to the main queue if any UI is updated in the event handler.
          */
-        public let fail: StreamPlayer.Event<Error?> = StreamPlayer.Event()
+        public let fail: AudioPlayer.Event<Error?> = AudioPlayer.Event()
         
         /**
          Emitted when the player is done attempting to seek.
          - Important: Remember to dispatch to the main queue if any UI is updated in the event handler.
          */
-        public let seek: StreamPlayer.Event<SeekEventData> = StreamPlayer.Event()
+        public let seek: AudioPlayer.Event<SeekEventData> = AudioPlayer.Event()
         
         /**
          Emitted when the player updates its duration.
          - Important: Remember to dispatch to the main queue if any UI is updated in the event handler.
          */
-        public let updateDuration: StreamPlayer.Event<TimeInterval> = StreamPlayer.Event()
+        public let updateDuration: AudioPlayer.Event<TimeInterval> = AudioPlayer.Event()
         
     }
     

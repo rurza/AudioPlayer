@@ -17,7 +17,7 @@ public class RemoteCommandController {
     
     private let center: MPRemoteCommandCenter
     
-    weak var audioPlayer: StreamPlayer?
+    weak var audioPlayer: AudioPlayer?
     
     var commandTargetPointers: [String: Any] = [:]
     
