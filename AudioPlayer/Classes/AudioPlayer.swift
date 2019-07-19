@@ -19,8 +19,9 @@ public class AudioPlayer {
      Set this to false to disable automatic updating of now playing info for control center and lock screen.
      */
     public var automaticallyUpdateNowPlayingInfo: Bool = true
+    public var
     
-    private(set) public var state: State = .idle
+    internal(set) public var state: State = .idle
     
     //MARK: Private
     internal lazy var avPlayer = AVQueuePlayer()

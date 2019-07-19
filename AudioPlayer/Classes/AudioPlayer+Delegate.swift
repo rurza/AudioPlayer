@@ -21,25 +21,26 @@ extension AudioPlayer: AVPlayerObserverDelegate, AudioPlayerItemObserverDelegate
         @unknown default:
             break
         }
-//        switch status {
-//        case .paused:
-//            if currentItem == nil {
-//                state = .idle
-//            }
-//            else {
-//                self._state = .paused
-//            }
-//        case .waitingToPlayAtSpecifiedRate:
-//            self._state = .buffering
-//        case .playing:
-//            self._state = .playing
-//        @unknown default:
-//            break
-//        }
     }
     
     func player(didChangeTimeControlStatus status: AVPlayer.TimeControlStatus) {
-        
+        switch status {
+        case .paused:
+            if currentItem == nil {
+                state = .idle
+            } else {
+                state = .paused
+            }
+            event.stateChange.emit(data: .paused)
+        case .playing:
+            state = .playing
+            event.stateChange.emit(data: .playing)
+        case .waitingToPlayAtSpecifiedRate:
+            state = .buffering
+            event.stateChange.emit(data: .buffering)
+        @unknown default:
+            break
+        }
     }
     
     //MARK: AudioPlayerItemObserverDelegate
@@ -50,7 +51,7 @@ extension AudioPlayer: AVPlayerObserverDelegate, AudioPlayerItemObserverDelegate
     
     //MARK: AVPlayerItemNotificationObserverDelegate
     func itemDidPlayToEndTime() {
-        
+        event.playbackEnd.emit(data: .playedUntilEnd)
     }
     
 }
