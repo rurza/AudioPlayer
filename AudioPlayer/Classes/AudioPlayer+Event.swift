@@ -52,7 +52,7 @@ extension AudioPlayer {
         public let updateDuration: AudioPlayer.Event<TimeInterval> = AudioPlayer.Event()
         
         /// Emitted before player updates Now playing info. You can use it to update remote commands for example
-        public let willUpdateNowPlayingInfo: AudioPlayer.Event<AudioPlayerItem> = AudioPlayer.Event()
+        public let willUpdateNowPlayingInfo: AudioPlayer.Event<AudioItem?> = AudioPlayer.Event()
         
     }
     

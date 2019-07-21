@@ -20,8 +20,8 @@ extension AudioPlayer {
      - Album artwork
      */
     public func loadNowPlayingMetaValues() {
+        event.willUpdateNowPlayingInfo.emit(data: currentItem)
         guard let item = currentItem else { return() }
-        
         nowPlayingInfoController.set(keyValues: [
             MediaItemProperty.artist(item.getArtist()),
             MediaItemProperty.title(item.getTitle()),

@@ -21,6 +21,12 @@ public class AudioPlayer {
     public var automaticallyUpdateNowPlayingInfo = true
     public var playAutomatically = false
     
+    public var remoteCommands = [RemoteCommand]() {
+        didSet {
+            remoteCommandController.enable(commands: remoteCommands)
+        }
+    }
+    
     fileprivate(set) public var state: State = .idle
     
     //MARK: Private
@@ -122,9 +128,9 @@ public class AudioPlayer {
     
 }
 
-extension AudioPlayer {
+public extension AudioPlayer {
     //MARK: Getters
-    public var currentTime: TimeInterval {
+     var currentTime: TimeInterval {
         let seconds = avPlayer.currentTime().seconds
         return seconds.isNaN ? 0 : seconds
     }
@@ -143,28 +149,32 @@ extension AudioPlayer {
         return 0.0
     }
     
-    public var automaticallyWaitsToMinimizeStalling: Bool {
+    var automaticallyWaitsToMinimizeStalling: Bool {
         get { return avPlayer.automaticallyWaitsToMinimizeStalling }
         set { avPlayer.automaticallyWaitsToMinimizeStalling = newValue }
     }
     
-    public var volume: Float {
+    var volume: Float {
         get { return avPlayer.volume }
         set { avPlayer.volume = newValue }
     }
     
-    public var isMuted: Bool {
+    var isMuted: Bool {
         get { return avPlayer.isMuted }
         set { avPlayer.isMuted = newValue }
     }
     
-    public var rate: Float {
+    var rate: Float {
         get { return avPlayer.rate }
         set { avPlayer.rate = newValue }
     }
     
     var currentItem: AudioItem? {
         return avPlayer.currentItem as? AudioItem
+    }
+    
+    var items: [AudioItem] {
+        return avPlayer.items().map { $0 as! AudioItem }
     }
     
 }
@@ -176,13 +186,9 @@ extension AudioPlayer: AVPlayerObserverDelegate, AVPlayerItemObserverDelegate, A
     func player(statusDidChange status: AVPlayer.Status) {
         switch status {
         case .failed:
-            print("⏯ player statusDidChange failed")
             event.fail.emit(data: avPlayer.error)
         case .readyToPlay:
-            print("⏯ player statusDidChange readyToPlay")
             loadNowPlayingMetaValues()
-            remoteCommandController.enable(commands: [.changePlaybackPosition, .togglePlayPause, .next])
-            
             if playAutomatically {
                 play()
             }
@@ -196,37 +202,29 @@ extension AudioPlayer: AVPlayerObserverDelegate, AVPlayerItemObserverDelegate, A
     func player(didChangeTimeControlStatus status: AVPlayer.TimeControlStatus) {
         switch status {
         case .paused:
-            print("⏳ player didChangeTimeControlStatus: paused")
             if currentItem == nil {
                 state = .idle
             } else {
                 state = .paused
             }
-            event.stateChange.emit(data: .paused)
         case .playing:
-            print("⏳ player didChangeTimeControlStatus: playing")
             state = .playing
-            event.stateChange.emit(data: .playing)
         case .waitingToPlayAtSpecifiedRate:
             if let _ = avPlayer.currentItem {
-                print("⏳ player didChangeTimeControlStatus: buffering")
                 state = .buffering
-                event.stateChange.emit(data: .buffering)
             } else {
-                print("⏳ player didChangeTimeControlStatus: idle")
                 state = .idle
-                event.stateChange.emit(data: .idle)
                 event.playbackEnd.emit(data: .playerStopped)
-                
             }
         @unknown default:
             break
         }
+        print("⏳ player didChangeTimeControlStatus: \(state.rawValue)")
+        event.stateChange.emit(data: state)
     }
     
     //MARK: AVPlayerItemObserverDelegate
     func item(_ item: AVPlayerItem, didUpdateDuration duration: TimeInterval) {
-        print("Item \(item) didUpdateDuration: \(duration)")
         updateNowPlayingPlaybackValues()
         event.updateDuration.emit(data: duration)
     }
@@ -234,7 +232,6 @@ extension AudioPlayer: AVPlayerObserverDelegate, AVPlayerItemObserverDelegate, A
     
     //MARK: AVPlayerItemNotificationObserverDelegate
     func itemDidPlayToEndTime(_ item: AVPlayerItem) {
-        print("itemDidPlayToEndTime \(item)")
         event.playbackEnd.emit(data: .playedUntilEnd)
         startObservingCurrentItem()
         loadNowPlayingMetaValues()
@@ -245,7 +242,7 @@ extension AudioPlayer: AVPlayerObserverDelegate, AVPlayerItemObserverDelegate, A
 extension AudioPlayer: CachingPlayerItemDelegate {
     
     func playerItem(_ playerItem: CachingPlayerItem, didFinishDownloadingData data: Data) {
-        print("playerItem didFinishDownloadingData \(playerItem)")
+        print("playerItem didFinishDownloadingData \(playerItem.debugDescription)")
     }
     
     

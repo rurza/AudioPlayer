@@ -35,6 +35,7 @@ public class RemoteCommandController {
         commands.forEach { (command) in
             enable(command: command)
         }
+        print(center)
     }
     
     internal func disable(commands: [RemoteCommand]) {

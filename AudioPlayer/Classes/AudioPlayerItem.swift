@@ -26,7 +26,7 @@ open class AudioPlayerItem: CachingPlayerItem {
     }
     
     override open var debugDescription: String {
-        return "\(String(describing: audioItem.getArtist())) - \(String(describing: audioItem.getTitle()))"
+         return "\(String(describing: audioItem.getArtist())) - \(String(describing: audioItem.getTitle()))"
     }
 }
 
