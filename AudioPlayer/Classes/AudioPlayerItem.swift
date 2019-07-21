@@ -7,7 +7,7 @@
 
 import UIKit
 
-class AudioPlayerItem: CachingPlayerItem {
+open class AudioPlayerItem: CachingPlayerItem {
     
     internal let audioItem: AudioItem
     
@@ -24,8 +24,10 @@ class AudioPlayerItem: CachingPlayerItem {
         self.audioItem = audioItem
         super.init(data: data, mimeType: mimeType, fileExtension: fileExtension)
     }
-
-
+    
+    override open var debugDescription: String {
+        return "\(String(describing: audioItem.getArtist())) - \(String(describing: audioItem.getTitle()))"
+    }
 }
 
 extension AudioPlayerItem: AudioItem {

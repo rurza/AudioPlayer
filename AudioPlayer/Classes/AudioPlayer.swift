@@ -18,13 +18,13 @@ public class AudioPlayer {
     /**
      Set this to false to disable automatic updating of now playing info for control center and lock screen.
      */
-    public var automaticallyUpdateNowPlayingInfo: Bool = true
-    public var
+    public var automaticallyUpdateNowPlayingInfo = true
+    public var playAutomatically = false
     
-    internal(set) public var state: State = .idle
+    fileprivate(set) public var state: State = .idle
     
     //MARK: Private
-    internal lazy var avPlayer = AVQueuePlayer()
+    fileprivate lazy var avPlayer = AVQueuePlayer()
     let playerObserver = AVPlayerObserver()
     var timeEventFrequency: TimeEventFrequency = .everySecond {
         didSet {
@@ -33,25 +33,30 @@ public class AudioPlayer {
     }
     let playerTimeObserver: AVPlayerTimeObserver
     let playerItemNotificationObserver = AVPlayerItemNotificationObserver()
-    let playerItemObserver = AudioPlayerItemObserver()
+    let playerItemObserver = AVPlayerItemObserver()
     
     public init(nowPlayingInfoController: NowPlayingInfoControllerProtocol = NowPlayingInfoController(),
                 remoteCommandController: RemoteCommandController = RemoteCommandController()) {
         playerTimeObserver = AVPlayerTimeObserver(periodicObserverTimeInterval: timeEventFrequency.getTime())
         self.nowPlayingInfoController = nowPlayingInfoController
         self.remoteCommandController = remoteCommandController
-        playerTimeObserver.player = avPlayer
+        
         playerObserver.player = avPlayer
         playerObserver.delegate = self
+        playerObserver.startObserving()
+        
         playerItemObserver.delegate = self
         playerItemNotificationObserver.delegate = self
+        
         self.remoteCommandController.audioPlayer = self
+        
+        playerTimeObserver.player = avPlayer
         playerTimeObserver.registerForPeriodicTimeEvents()
     }
     
     public func play() {
         avPlayer.play()
-        updateNowPlayingPlaybackValues()
+        
     }
     
     public func pause() {
@@ -77,6 +82,9 @@ public class AudioPlayer {
     
     public func next() {
         avPlayer.advanceToNextItem()
+        startObservingCurrentItem()
+        loadNowPlayingMetaValues()
+        event.playbackEnd.emit(data: .skippedToNext)
     }
     
     public func previous() {
@@ -99,6 +107,16 @@ public class AudioPlayer {
                 avPlayer.insert(item, after: nil)
                 item.delegate = self
             }
+        }
+        if playAutomatically {
+            play()
+        }
+    }
+    
+    fileprivate func startObservingCurrentItem() {
+        if let currentItem = avPlayer.currentItem {
+            playerItemNotificationObserver.startObserving(item: currentItem)
+            playerItemObserver.startObserving(item: currentItem)
         }
     }
     
@@ -148,5 +166,87 @@ extension AudioPlayer {
     var currentItem: AudioItem? {
         return avPlayer.currentItem as? AudioItem
     }
+    
+}
+
+
+extension AudioPlayer: AVPlayerObserverDelegate, AVPlayerItemObserverDelegate, AVPlayerItemNotificationObserverDelegate {
+    
+    //MARK: AVPlayerObserverDelegate
+    func player(statusDidChange status: AVPlayer.Status) {
+        switch status {
+        case .failed:
+            print("⏯ player statusDidChange failed")
+            event.fail.emit(data: avPlayer.error)
+        case .readyToPlay:
+            print("⏯ player statusDidChange readyToPlay")
+            loadNowPlayingMetaValues()
+            remoteCommandController.enable(commands: [.changePlaybackPosition, .togglePlayPause, .next])
+            
+            if playAutomatically {
+                play()
+            }
+        case .unknown:
+            break
+        @unknown default:
+            break
+        }
+    }
+    
+    func player(didChangeTimeControlStatus status: AVPlayer.TimeControlStatus) {
+        switch status {
+        case .paused:
+            print("⏳ player didChangeTimeControlStatus: paused")
+            if currentItem == nil {
+                state = .idle
+            } else {
+                state = .paused
+            }
+            event.stateChange.emit(data: .paused)
+        case .playing:
+            print("⏳ player didChangeTimeControlStatus: playing")
+            state = .playing
+            event.stateChange.emit(data: .playing)
+        case .waitingToPlayAtSpecifiedRate:
+            if let _ = avPlayer.currentItem {
+                print("⏳ player didChangeTimeControlStatus: buffering")
+                state = .buffering
+                event.stateChange.emit(data: .buffering)
+            } else {
+                print("⏳ player didChangeTimeControlStatus: idle")
+                state = .idle
+                event.stateChange.emit(data: .idle)
+                event.playbackEnd.emit(data: .playerStopped)
+                
+            }
+        @unknown default:
+            break
+        }
+    }
+    
+    //MARK: AVPlayerItemObserverDelegate
+    func item(_ item: AVPlayerItem, didUpdateDuration duration: TimeInterval) {
+        print("Item \(item) didUpdateDuration: \(duration)")
+        updateNowPlayingPlaybackValues()
+        event.updateDuration.emit(data: duration)
+    }
+    
+    
+    //MARK: AVPlayerItemNotificationObserverDelegate
+    func itemDidPlayToEndTime(_ item: AVPlayerItem) {
+        print("itemDidPlayToEndTime \(item)")
+        event.playbackEnd.emit(data: .playedUntilEnd)
+        startObservingCurrentItem()
+        loadNowPlayingMetaValues()
+    }
+    
+}
+
+extension AudioPlayer: CachingPlayerItemDelegate {
+    
+    func playerItem(_ playerItem: CachingPlayerItem, didFinishDownloadingData data: Data) {
+        print("playerItem didFinishDownloadingData \(playerItem)")
+    }
+    
     
 }

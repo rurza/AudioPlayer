@@ -10,7 +10,7 @@ import AVFoundation
 
 
 protocol AVPlayerItemNotificationObserverDelegate: class {
-    func itemDidPlayToEndTime()
+    func itemDidPlayToEndTime(_ item: AVPlayerItem)
 }
 
 /**
@@ -57,7 +57,7 @@ class AVPlayerItemNotificationObserver {
     }
     
     @objc private func itemDidPlayToEndTime() {
-        delegate?.itemDidPlayToEndTime()
+        delegate?.itemDidPlayToEndTime(observingItem!)
     }
     
 }
