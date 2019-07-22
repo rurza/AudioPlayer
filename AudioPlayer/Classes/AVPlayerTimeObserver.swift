@@ -25,7 +25,7 @@ class AVPlayerTimeObserver {
     var boundaryTimeStartObserverToken: Any?
     var periodicTimeObserverToken: Any?
     
-    weak var player: AVPlayer? {
+    weak var player: AVQueuePlayer? {
         willSet {
             unregisterForBoundaryTimeEvents()
             unregisterForPeriodicEvents()
@@ -44,8 +44,9 @@ class AVPlayerTimeObserver {
     
     weak var delegate: AVPlayerTimeObserverDelegate?
     
-    init(periodicObserverTimeInterval: CMTime) {
+    init(periodicObserverTimeInterval: CMTime, player: AVQueuePlayer?) {
         self.periodicObserverTimeInterval = periodicObserverTimeInterval
+        self.player = player
     }
     
     deinit {

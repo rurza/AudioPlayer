@@ -30,8 +30,8 @@ public class AudioPlayer {
     fileprivate(set) public var state: State = .idle
     
     //MARK: Private
-    fileprivate lazy var avPlayer = AVQueuePlayer()
-    let playerObserver = AVPlayerObserver()
+    fileprivate var avPlayer = AVQueuePlayer()
+    let playerObserver: AVPlayerObserver
     var timeEventFrequency: TimeEventFrequency = .everySecond {
         didSet {
             playerTimeObserver.periodicObserverTimeInterval = timeEventFrequency.getTime()
@@ -43,11 +43,11 @@ public class AudioPlayer {
     
     public init(nowPlayingInfoController: NowPlayingInfoControllerProtocol = NowPlayingInfoController(),
                 remoteCommandController: RemoteCommandController = RemoteCommandController()) {
-        playerTimeObserver = AVPlayerTimeObserver(periodicObserverTimeInterval: timeEventFrequency.getTime())
         self.nowPlayingInfoController = nowPlayingInfoController
         self.remoteCommandController = remoteCommandController
+        playerTimeObserver = AVPlayerTimeObserver(periodicObserverTimeInterval: timeEventFrequency.getTime(), player: avPlayer)
         
-        playerObserver.player = avPlayer
+        playerObserver = AVPlayerObserver(avPlayer: avPlayer)
         playerObserver.delegate = self
         playerObserver.startObserving()
         
@@ -55,14 +55,12 @@ public class AudioPlayer {
         playerItemNotificationObserver.delegate = self
         
         self.remoteCommandController.audioPlayer = self
-        
-        playerTimeObserver.player = avPlayer
         playerTimeObserver.registerForPeriodicTimeEvents()
     }
     
     public func play() {
+        startObservingCurrentItem()
         avPlayer.play()
-        
     }
     
     public func pause() {
@@ -71,7 +69,7 @@ public class AudioPlayer {
     
     public func stop() {
         pause()
-        avPlayer.removeAllItems()
+        clearQueue()
         event.playbackEnd.emit(data: .playerStopped)
     }
     
@@ -117,6 +115,10 @@ public class AudioPlayer {
         if playAutomatically {
             play()
         }
+    }
+    
+    public func clearQueue() {
+        avPlayer.removeAllItems()
     }
     
     fileprivate func startObservingCurrentItem() {
@@ -219,8 +221,13 @@ extension AudioPlayer: AVPlayerObserverDelegate, AVPlayerItemObserverDelegate, A
         @unknown default:
             break
         }
-        print("⏳ player didChangeTimeControlStatus: \(state.rawValue)")
         event.stateChange.emit(data: state)
+    }
+    
+    func player(didChangeCurrentItem currentItem: AVPlayerItem?) {
+        print("⏳ player didChangeCurrentItem: \(String(describing: currentItem?.debugDescription))")
+        startObservingCurrentItem()
+        loadNowPlayingMetaValues()
     }
     
     //MARK: AVPlayerItemObserverDelegate
@@ -233,8 +240,6 @@ extension AudioPlayer: AVPlayerObserverDelegate, AVPlayerItemObserverDelegate, A
     //MARK: AVPlayerItemNotificationObserverDelegate
     func itemDidPlayToEndTime(_ item: AVPlayerItem) {
         event.playbackEnd.emit(data: .playedUntilEnd)
-        startObservingCurrentItem()
-        loadNowPlayingMetaValues()
     }
     
 }
@@ -242,7 +247,8 @@ extension AudioPlayer: AVPlayerObserverDelegate, AVPlayerItemObserverDelegate, A
 extension AudioPlayer: CachingPlayerItemDelegate {
     
     func playerItem(_ playerItem: CachingPlayerItem, didFinishDownloadingData data: Data) {
-        print("playerItem didFinishDownloadingData \(playerItem.debugDescription)")
+        guard let audioItem = playerItem as? AudioItem else { fatalError() }
+        event.cached.emit(data: (data: data, item: audioItem))
     }
     
     

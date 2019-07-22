@@ -11,6 +11,7 @@ import Foundation
 extension AudioPlayer {
     
     public typealias SeekEventData = (seconds: TimeInterval, didFinish: Bool)
+    public typealias CacheEventData = (data: Data, item: AudioItem)
     
     public struct EventHolder {
         
@@ -53,6 +54,9 @@ extension AudioPlayer {
         
         /// Emitted before player updates Now playing info. You can use it to update remote commands for example
         public let willUpdateNowPlayingInfo: AudioPlayer.Event<AudioItem?> = AudioPlayer.Event()
+        
+        /// Emitted when player did download cache
+        public let cached: AudioPlayer.Event<CacheEventData> = AudioPlayer.Event()
         
     }
     

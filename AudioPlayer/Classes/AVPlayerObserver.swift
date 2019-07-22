@@ -10,16 +10,15 @@ import Foundation
 import AVFoundation
 
 protocol AVPlayerObserverDelegate: class {
-    
-    /**
-     Called when the AVPlayer.status changes.
-     */
+
+    ///Called when the AVPlayer.status changes.
     func player(statusDidChange status: AVPlayer.Status)
     
-    /**
-     Called when the AVPlayer.timeControlStatus changes.
-     */
+    ///Called when the AVPlayer.timeControlStatus changes.
     func player(didChangeTimeControlStatus status: AVPlayer.TimeControlStatus)
+    
+    /// Called when AVPlayer currentItem did change
+    func player(didChangeCurrentItem currentItem: AVPlayerItem?)
     
 }
 
@@ -34,11 +33,18 @@ class AVPlayerObserver: NSObject {
     private struct AVPlayerKeyPath {
         static let status = #keyPath(AVPlayer.status)
         static let timeControlStatus = #keyPath(AVPlayer.timeControlStatus)
+        static let currentItem = #keyPath(AVPlayer.currentItem)
     }
     
     private let statusChangeOptions: NSKeyValueObservingOptions = [.new, .initial]
     private let timeControlStatusChangeOptions: NSKeyValueObservingOptions = [.new]
     private(set) var isObserving: Bool = false
+    
+    init(avPlayer: AVPlayer?, delegate: AVPlayerObserverDelegate? = nil) {
+        self.player = avPlayer
+        self.delegate = delegate
+        super.init()
+    }
     
     weak var delegate: AVPlayerObserverDelegate?
     weak var player: AVPlayer? {
@@ -62,6 +68,7 @@ class AVPlayerObserver: NSObject {
         self.isObserving = true
         player.addObserver(self, forKeyPath: AVPlayerKeyPath.status, options: self.statusChangeOptions, context: &AVPlayerObserver.context)
         player.addObserver(self, forKeyPath: AVPlayerKeyPath.timeControlStatus, options: self.timeControlStatusChangeOptions, context: &AVPlayerObserver.context)
+        player.addObserver(self, forKeyPath: AVPlayerKeyPath.currentItem, options: self.timeControlStatusChangeOptions, context: &AVPlayerObserver.context)
     }
     
     func stopObserving() {
@@ -70,6 +77,7 @@ class AVPlayerObserver: NSObject {
         }
         player.removeObserver(self, forKeyPath: AVPlayerKeyPath.status, context: &AVPlayerObserver.context)
         player.removeObserver(self, forKeyPath: AVPlayerKeyPath.timeControlStatus, context: &AVPlayerObserver.context)
+        player.removeObserver(self, forKeyPath: AVPlayerKeyPath.currentItem, context: &AVPlayerObserver.context)
         self.isObserving = false
     }
     
@@ -87,6 +95,8 @@ class AVPlayerObserver: NSObject {
         case AVPlayerKeyPath.timeControlStatus:
             self.handleTimeControlStatusChange(change)
             
+        case AVPlayerKeyPath.currentItem:
+            self.handleCurrentItemChange(change)
         default:
             break
             
@@ -110,6 +120,11 @@ class AVPlayerObserver: NSObject {
             status = AVPlayer.TimeControlStatus(rawValue: statusNumber.intValue)!
             delegate?.player(didChangeTimeControlStatus: status)
         }
+    }
+    
+    private func handleCurrentItemChange(_ change: [NSKeyValueChangeKey: Any]?) {
+        let currentItem = change?[.newKey] as? AVPlayerItem
+        delegate?.player(didChangeCurrentItem: currentItem)
     }
     
 }
