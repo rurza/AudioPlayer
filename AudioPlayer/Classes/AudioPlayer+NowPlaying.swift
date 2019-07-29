@@ -20,15 +20,15 @@ extension AudioPlayer {
      - Album artwork
      */
     public func loadNowPlayingMetaValues() {
-        event.willUpdateNowPlayingInfo.emit(data: currentItem)
-        guard let item = currentItem else { return() }
-        nowPlayingInfoController.set(keyValues: [
+        self.event.willUpdateNowPlayingInfo.emit(data: self.currentItem)
+        guard let item = self.currentItem else { return() }
+        self.nowPlayingInfoController.set(keyValues: [
             MediaItemProperty.artist(item.getArtist()),
             MediaItemProperty.title(item.getTitle()),
             MediaItemProperty.albumTitle(item.getAlbumTitle()),
             ])
         
-        loadArtwork(forItem: item)
+        self.loadArtwork(forItem: item)
     }
     
     /**
@@ -59,11 +59,13 @@ extension AudioPlayer {
     
     private func loadArtwork(forItem item: AudioItem) {
         item.getArtwork { (image) in
-            if let image = image {
-                let artwork = MPMediaItemArtwork(boundsSize: image.size, requestHandler: { (size) -> UIImage in
-                    return image
-                })
-                self.nowPlayingInfoController.set(keyValue: MediaItemProperty.artwork(artwork))
+            DispatchQueue.main.async {
+                if let image = image {
+                    let artwork = MPMediaItemArtwork(boundsSize: image.size, requestHandler: { (size) -> UIImage in
+                        return image
+                    })
+                    self.nowPlayingInfoController.set(keyValue: MediaItemProperty.artwork(artwork))
+                }
             }
         }
     }
