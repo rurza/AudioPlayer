@@ -55,6 +55,7 @@ public class AudioPlayer {
         playerItemNotificationObserver.delegate = self
         
         self.remoteCommandController.audioPlayer = self
+        playerTimeObserver.delegate = self
         playerTimeObserver.registerForPeriodicTimeEvents()
     }
     
@@ -225,7 +226,6 @@ extension AudioPlayer: AVPlayerObserverDelegate, AVPlayerItemObserverDelegate, A
     }
     
     func player(didChangeCurrentItem currentItem: AVPlayerItem?) {
-        print("⏳ player didChangeCurrentItem: \(String(describing: currentItem?.debugDescription))")
         startObservingCurrentItem()
         loadNowPlayingMetaValues()
     }
@@ -251,5 +251,14 @@ extension AudioPlayer: CachingPlayerItemDelegate {
         event.cached.emit(data: (data: data, item: audioItem))
     }
     
+}
+
+extension AudioPlayer: AVPlayerTimeObserverDelegate {
+    func audioDidStart() {
+        
+    }
     
+    func timeEvent(time: CMTime) {
+        event.secondElapse.emit(data: time.seconds)
+    }
 }

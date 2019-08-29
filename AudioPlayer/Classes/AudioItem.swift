@@ -12,3 +12,9 @@ public protocol AudioItem {
     func getAlbumTitle() -> String?
     func getArtwork(_ handler: @escaping (UIImage?) -> Void)
 }
+
+extension AudioItem {
+    public func isTheSameTrackAs(_ another: AudioItem?) -> Bool {
+        return getTitle() == another?.getTitle() && getArtist() == another?.getArtist()
+    }
+}

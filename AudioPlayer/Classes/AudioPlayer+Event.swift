@@ -58,6 +58,8 @@ extension AudioPlayer {
         /// Emitted when player did download cache
         public let cached: AudioPlayer.Event<CacheEventData> = AudioPlayer.Event()
         
+        
+        
     }
     
     public typealias EventClosure<EventData> = (EventData) -> Void
@@ -103,7 +105,7 @@ extension AudioPlayer {
                     if let listenerToCheck = invoker.listener {
                         return listenerToCheck !== listener
                     }
-                    return true
+                    return false
                 })
                 self.invokersSemaphore.signal()
             }

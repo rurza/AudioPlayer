@@ -20,17 +20,15 @@ extension AudioPlayer {
      - Album artwork
      */
     public func loadNowPlayingMetaValues() {
-        DispatchQueue.main.async {
-            self.event.willUpdateNowPlayingInfo.emit(data: self.currentItem)
-            guard let item = self.currentItem else { return() }
-            self.nowPlayingInfoController.set(keyValues: [
-                MediaItemProperty.artist(item.getArtist()),
-                MediaItemProperty.title(item.getTitle()),
-                MediaItemProperty.albumTitle(item.getAlbumTitle()),
-                ])
-            
-            self.loadArtwork(forItem: item)
-        }
+        self.event.willUpdateNowPlayingInfo.emit(data: self.currentItem)
+        guard let item = self.currentItem else { return() }
+        self.nowPlayingInfoController.set(keyValues: [
+            MediaItemProperty.artist(item.getArtist()),
+            MediaItemProperty.title(item.getTitle()),
+            MediaItemProperty.albumTitle(item.getAlbumTitle()),
+            ])
+        
+        self.loadArtwork(forItem: item)
     }
     
     /**
